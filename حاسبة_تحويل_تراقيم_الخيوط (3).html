@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة تحويل تراقيم الخيوط</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00d4ff;
+            --secondary: #7b2cbf;
+            --accent: #ff006e;
+            --success: #00f5d4;
+            --warning: #fee440;
+            --bg-dark: #0a0a0f;
+            --bg-card: rgba(15, 15, 25, 0.7);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(123, 44, 191, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(255, 0, 110, 0.05) 0%, transparent 70%);
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Header */
+        header {
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: white;
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 40px rgba(123, 44, 191, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.2), transparent 30%);
+            animation: logoSpin 3s linear infinite;
+        }
+
+        @keyframes logoSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .logo-icon i {
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(0, 212, 255, 0); }
+        }
+
+        .logo-text {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% 200%;
+            animation: gradientShift 3s ease-in-out infinite;
+            letter-spacing: -0.5px;
+        }
+
+        .visitor-counter {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .visitor-counter i {
+            color: var(--accent);
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 3rem 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 5s ease-in-out infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Main Card */
+        .main-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .converter-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 1.5rem;
+            align-items: end;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .converter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group label i {
+            color: var(--primary);
+        }
+
+        select, input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        select option {
+            background: #1a1a2e;
+            color: var(--text-primary);
+        }
+
+        .swap-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .swap-btn:hover {
+            transform: rotate(180deg) scale(1.1);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .swap-btn {
+                margin: 0 auto;
+                transform: rotate(90deg);
+            }
+            .swap-btn:hover {
+                transform: rotate(270deg) scale(1.1);
+            }
+        }
+
+        .value-input-wrapper {
+            position: relative;
+        }
+
+        .value-input-wrapper input {
+            width: 100%;
+        }
+
+        .value-input-wrapper .input-hint {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            pointer-events: none;
+        }
+
+        .convert-btn {
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .convert-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .convert-btn:hover::before {
+            left: 100%;
+        }
+
+        .convert-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        /* Result Section */
+        .result-section {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(123, 44, 191, 0.1));
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .result-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            animation: countUp 0.5s ease-out;
+        }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.favorite.active {
+            background: rgba(255, 0, 110, 0.2);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Info Box */
+        .info-box {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: none;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .info-box.active {
+            display: block;
+        }
+
+        .info-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .info-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+        }
+
+        .info-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .info-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .info-item-label {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-item-value {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .badge-direct {
+            background: rgba(0, 245, 212, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(0, 245, 212, 0.3);
+        }
+
+        .badge-indirect {
+            background: rgba(0, 212, 255, 0.15);
+            color: var(--primary);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .badge-suitable {
+            background: rgba(0, 245, 212, 0.15);
+            color: var(--success);
+        }
+
+        .badge-unsuitable {
+            background: rgba(255, 0, 110, 0.15);
+            color: var(--accent);
+        }
+
+        /* Sections */
+        .section {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        /* History Table */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 1rem;
+            text-align: right;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .history-table th {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .history-table td {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .history-table tr:hover td {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Reference Table */
+        .ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .ref-table th,
+        .ref-table td {
+            padding: 0.75rem;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+        }
+
+        .ref-table th {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .ref-table td {
+            color: var(--text-secondary);
+        }
+
+        .ref-table tr:nth-child(even) {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Quick Examples */
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .example-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .example-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.1);
+        }
+
+        .example-card h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .example-card p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .example-card .tag {
+            display: inline-block;
+            margin-top: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
+
+        /* Favorites */
+        .fav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .fav-item {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .fav-item:hover {
+            border-color: var(--accent);
+        }
+
+        .fav-info {
+            font-size: 0.9rem;
+        }
+
+        .fav-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 0, 110, 0.2);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* Alert */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .alert.active {
+            display: flex;
+        }
+
+        .alert-error {
+            background: rgba(255, 0, 110, 0.1);
+            border: 1px solid rgba(255, 0, 110, 0.3);
+            color: var(--accent);
+        }
+
+        .alert-success {
+            background: rgba(0, 245, 212, 0.1);
+            border: 1px solid rgba(0, 245, 212, 0.3);
+            color: var(--success);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--glass-border);
+            margin-top: 3rem;
+        }
+
+        .footer-brand {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-brand span {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-counter {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a2e;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 0.5rem;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: loadingBounce 1.4s ease-in-out infinite;
+        }
+
+        .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes loadingBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.8rem; }
+            .main-card { padding: 1.5rem; }
+            .result-value { font-size: 1.8rem; }
+            .info-grid { grid-template-columns: 1fr; }
+            .examples-grid { grid-template-columns: 1fr; }
+            header { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="grid-overlay"></div>
+    <div class="particles" id="particles"></div>
+
+    <header>
+        <div class="logo">
+            <div class="logo-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 2a10 10 0 0 1 0 20"/>
+                    <path d="M12 2a10 10 0 0 0 0 20"/>
+                    <circle cx="12" cy="12" r="4"/>
+                    <path d="M12 8v8"/>
+                    <path d="M8 12h8"/>
+                </svg>
+            </div>
+            <div class="logo-text">حاسبة تراقيم الخيوط</div>
+        </div>
+        <div class="visitor-counter">
+            <i class="fas fa-eye"></i>
+            <span>عدد الزيارات:</span>
+            <strong id="visitorCount">جاري التحميل...</strong>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="hero">
+            <h1>حاسبة تحويل تراقيم الخيوط</h1>
+            <p>أداة هندسية احترافية لتحويل جميع أنظمة تراقيم الخيوط العالمية مع مرجع صناعي متكامل</p>
+        </div>
+
+        <div class="main-card">
+            <div class="alert alert-error" id="errorAlert">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorText"></span>
+            </div>
+
+            <div class="converter-grid">
+                <div class="form-group">
+                    <label><i class="fas fa-sign-out-alt"></i> التحويل من</label>
+                    <select id="fromSystem">
+                        <option value="">اختر نظام الترقيم</option>
+                        <option value="ne">Ne (English Cotton Count)</option>
+                        <option value="nm">Nm (Metric Count)</option>
+                        <option value="worsted">Worsted Count</option>
+                        <option value="woolen">Woolen Count (Run)</option>
+                        <option value="tex">Tex</option>
+                        <option value="dtex">Dtex</option>
+                        <option value="denier">Denier</option>
+                        <option value="ply">Ply Yarn</option>
+                        <option value="filament">Denier/Filament</option>
+                    </select>
+                </div>
+
+                <button class="swap-btn tooltip" data-tip="تبديل الأنظمة" id="swapBtn" title="تبديل (Ctrl+S)">
+                    <i class="fas fa-exchange-alt"></i>
+                </button>
+
+                <div class="form-group">
+                    <label><i class="fas fa-sign-in-alt"></i> التحويل إلى</label>
+                    <select id="toSystem">
+                        <option value="">اختر نظام الترقيم</option>
+                        <option value="ne">Ne (English Cotton Count)</option>
+                        <option value="nm">Nm (Metric Count)</option>
+                        <option value="worsted">Worsted Count</option>
+                        <option value="woolen">Woolen Count (Run)</option>
+                        <option value="tex">Tex</option>
+                        <option value="dtex">Dtex</option>
+                        <option value="denier">Denier</option>
+                        <option value="ply">Ply Yarn</option>
+                        <option value="filament">Denier/Filament</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label><i class="fas fa-hashtag"></i> قيمة الخيط</label>
+                <div class="value-input-wrapper">
+                    <input type="text" id="inputValue" placeholder="أدخل القيمة أو اختر من القائمة" list="yarnCounts" autocomplete="off">
+                    <datalist id="yarnCounts"></datalist>
+                </div>
+            </div>
+
+            <div class="loading" id="loadingIndicator">
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+            </div>
+
+            <button class="convert-btn" id="convertBtn">
+                <i class="fas fa-calculator"></i>
+                تحويل
+                <span style="font-size:0.8rem;opacity:0.7">(Ctrl+Enter)</span>
+            </button>
+
+            <div class="result-section" id="resultSection">
+                <div class="result-label">النتيجة</div>
+                <div class="result-value" id="resultValue">-</div>
+                <div class="result-actions">
+                    <button class="action-btn" id="copyBtn">
+                        <i class="fas fa-copy"></i> نسخ النتيجة
+                    </button>
+                    <button class="action-btn favorite" id="favBtn">
+                        <i class="fas fa-heart"></i> إضافة للمفضلة
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box" id="infoBox">
+            <div class="info-header">
+                <div class="info-icon"><i class="fas fa-info-circle"></i></div>
+                <div>
+                    <div class="info-title" id="infoTitle">-</div>
+                    <div class="info-subtitle" id="infoSubtitle">-</div>
+                </div>
+            </div>
+            <div class="info-grid" id="infoGrid"></div>
+        </div>
+
+        <!-- Quick Examples -->
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-industry"></i>
+                أمثلة صناعية حقيقية
+            </div>
+            <div class="examples-grid">
+                <div class="example-card" onclick="setExample('ne', '30', 'tex')">
+                    <h4><i class="fas fa-tshirt"></i> تيشيرت قطني</h4>
+                    <p>خيط Ne 30 مناسب للأقمشة المتوسطة والتيشيرتات القطنية اليومية</p>
+                    <span class="tag">Ne 30 → Tex 19.7</span>
+                </div>
+                <div class="example-card" onclick="setExample('ne', '40', 'tex')">
+                    <h4><i class="fas fa-socks"></i> جوارب ناعمة</h4>
+                    <p>خيط Ne 40 يُستخدم في الجوارب الناعمة والملابس الداخلية الفاخرة</p>
+                    <span class="tag">Ne 40 → Tex 14.8</span>
+                </div>
+                <div class="example-card" onclick="setExample('denier', '150', 'tex')">
+                    <h4><i class="fas fa-running"></i> جوارب رياضية</h4>
+                    <p>Denier 150D/48F خيط بوليستر شائع في الجوارب الرياضية والشدات</p>
+                    <span class="tag">150D → Tex 16.7</span>
+                </div>
+                <div class="example-card" onclick="setExample('denier', '70', 'tex')">
+                    <h4><i class="fas fa-female"></i> جوارب نسائية</h4>
+                    <p>Denier 70D خيط نايلون ناعم للجوارب الشفافة والملابس الداخلية</p>
+                    <span class="tag">70D → Tex 7.8</span>
+                </div>
+                <div class="example-card" onclick="setExample('ply', '20/2', 'ne')">
+                    <h4><i class="fas fa-layer-group"></i> خيط مجدول</h4>
+                    <p>20/2 يعني خيطين من Ne 20 مجدولين معاً، الناتج Ne 10</p>
+                    <span class="tag">20/2 → Ne 10</span>
+                </div>
+                <div class="example-card" onclick="setExample('worsted', '24', 'tex')">
+                    <h4><i class="fas fa-user-tie"></i> بدلات صوفية</h4>
+                    <p>Worsted 24 يُستخدم في البدلات الرسمية والملابس الشتوية الفاخرة</p>
+                    <span class="tag">Worsted 24 → Tex 36.9</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Reference -->
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-table"></i>
+                جدول مرجع سريع
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="ref-table">
+                    <thead>
+                        <tr>
+                            <th>النظام</th>
+                            <th>النوع</th>
+                            <th>العلاقة</th>
+                            <th>الاستخدام</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Ne</strong></td>
+                            <td>غير مباشر</td>
+                            <td>↑ رقم = ↓ سُمك</td>
+                            <td>قطن، ملابس</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Nm</strong></td>
+                            <td>غير مباشر</td>
+                            <td>↑ رقم = ↓ سُمك</td>
+                            <td>صوف، حرير</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tex</strong></td>
+                            <td>مباشر</td>
+                            <td>↑ رقم = ↑ سُمك</td>
+                            <td>عالمي</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Denier</strong></td>
+                            <td>مباشر</td>
+                            <td>↑ رقم = ↑ سُمك</td>
+                            <td>نايلون، بوليستر</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dtex</strong></td>
+                            <td>مباشر</td>
+                            <td>↑ رقم = ↑ سُمك</td>
+                            <td>أوروبي</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Worsted</strong></td>
+                            <td>غير مباشر</td>
+                            <td>↑ رقم = ↓ سُمك</td>
+                            <td>صوف مشطوف</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Conversion History -->
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-history"></i>
+                سجل التحويلات
+                <button class="icon-btn" style="margin-right: auto;" onclick="clearHistory()" title="مسح السجل">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <div id="historyContent">
+                <div class="empty-state">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    <p>لا توجد تحويلات مسجلة بعد</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Favorites -->
+        <div class="section">
+            <div class="section-title">
+                <i class="fas fa-heart"></i>
+                التحويلات المفضلة
+            </div>
+            <div id="favoritesContent">
+                <div class="empty-state">
+                    <i class="fas fa-heart"></i>
+                    <p>لا توجد تحويلات مفضلة بعد</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-brand">
+            Developed by <span>Adel Essam</span>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.85rem;">أداة هندسية احترافية لمهندسي الغزل والنسيج</p>
+        <div class="footer-counter">
+            <i class="fas fa-eye"></i>
+            <span>عدد زيارات الصفحة:</span>
+            <strong id="footerVisitorCount">-</strong>
+        </div>
+    </footer>
+
+    <script>
+
+        // ============================================
+        // قاعدة بيانات النمر الصناعية الحقيقية
+        // ============================================
+        const yarnCountsDB = {
+            ne: ["4", "4/2", "4/3", "4/4", "6", "6/2", "6/3", "6/4", "8", "8/2", "8/3", "8/4", "10", "10/2", "10/3", "10/4", "12", "12/2", "12/3", "12/4", "14", "14/2", "14/3", "14/4", "16", "16/2", "16/3", "16/4", "18", "18/2", "18/3", "18/4", "20", "20/2", "20/3", "20/4", "21", "21/2", "21/3", "21/4", "24", "24/2", "24/3", "24/4", "26", "26/2", "26/3", "26/4", "28", "28/2", "28/3", "28/4", "30", "30/2", "30/3", "30/4", "32", "32/2", "32/3", "32/4", "34", "34/2", "34/3", "34/4", "36", "36/2", "36/3", "36/4", "38", "38/2", "38/3", "38/4", "40", "40/2", "40/3", "40/4", "42", "42/2", "42/3", "42/4", "44", "44/2", "44/3", "44/4", "46", "46/2", "46/3", "46/4", "48", "48/2", "48/3", "48/4", "50", "50/2", "50/3", "50/4", "52", "52/2", "52/3", "52/4", "54", "54/2", "54/3", "54/4", "56", "56/2", "56/3", "56/4", "58", "58/2", "58/3", "58/4", "60", "60/2", "60/3", "60/4", "64", "64/2", "64/3", "64/4", "68", "68/2", "68/3", "68/4", "70", "70/2", "70/3", "70/4", "72", "72/2", "72/3", "72/4", "76", "76/2", "76/3", "76/4", "80", "80/2", "80/3", "80/4", "84", "84/2", "84/3", "84/4", "88", "88/2", "88/3", "88/4", "90", "90/2", "90/3", "90/4", "96", "96/2", "96/3", "96/4", "100", "100/2", "100/3", "100/4", "110", "110/2", "110/3", "110/4", "120", "120/2", "120/3", "120/4", "140", "140/2", "140/3", "140/4", "160", "160/2", "160/3", "160/4", "180", "180/2", "180/3", "180/4", "200", "200/2", "200/3", "200/4"],
+            nm: ["5", "5/2", "5/3", "5/4", "6", "6/2", "6/3", "6/4", "7", "7/2", "7/3", "7/4", "8", "8/2", "8/3", "8/4", "10", "10/2", "10/3", "10/4", "12", "12/2", "12/3", "12/4", "14", "14/2", "14/3", "14/4", "15", "15/2", "15/3", "15/4", "16", "16/2", "16/3", "16/4", "17", "17/2", "17/3", "17/4", "18", "18/2", "18/3", "18/4", "20", "20/2", "20/3", "20/4", "22", "22/2", "22/3", "22/4", "24", "24/2", "24/3", "24/4", "26", "26/2", "26/3", "26/4", "28", "28/2", "28/3", "28/4", "30", "30/2", "30/3", "30/4", "32", "32/2", "32/3", "32/4", "34", "34/2", "34/3", "34/4", "36", "36/2", "36/3", "36/4", "38", "38/2", "38/3", "38/4", "40", "40/2", "40/3", "40/4", "42", "42/2", "42/3", "42/4", "44", "44/2", "44/3", "44/4", "48", "48/2", "48/3", "48/4", "50", "50/2", "50/3", "50/4", "54", "54/2", "54/3", "54/4", "56", "56/2", "56/3", "56/4", "60", "60/2", "60/3", "60/4", "64", "64/2", "64/3", "64/4", "68", "68/2", "68/3", "68/4", "70", "70/2", "70/3", "70/4", "72", "72/2", "72/3", "72/4", "76", "76/2", "76/3", "76/4", "80", "80/2", "80/3", "80/4", "84", "84/2", "84/3", "84/4", "88", "88/2", "88/3", "88/4", "90", "90/2", "90/3", "90/4", "96", "96/2", "96/3", "96/4", "100", "100/2", "100/3", "100/4", "110", "110/2", "110/3", "110/4", "120", "120/2", "120/3", "120/4", "130", "130/2", "130/3", "130/4", "140", "140/2", "140/3", "140/4", "150", "150/2", "150/3", "150/4", "160", "160/2", "160/3", "160/4", "180", "180/2", "180/3", "180/4", "200", "200/2", "200/3", "200/4", "220", "220/2", "220/3", "220/4", "240", "240/2", "240/3", "240/4", "260", "260/2", "260/3", "260/4", "280", "280/2", "280/3", "280/4", "300", "300/2", "300/3", "300/4"],
+            worsted: ["5", "5/2", "5/3", "5/4", "6", "6/2", "6/3", "6/4", "7", "7/2", "7/3", "7/4", "8", "8/2", "8/3", "8/4", "9", "9/2", "9/3", "9/4", "10", "10/2", "10/3", "10/4", "12", "12/2", "12/3", "12/4", "14", "14/2", "14/3", "14/4", "15", "15/2", "15/3", "15/4", "16", "16/2", "16/3", "16/4", "18", "18/2", "18/3", "18/4", "20", "20/2", "20/3", "20/4", "22", "22/2", "22/3", "22/4", "24", "24/2", "24/3", "24/4", "26", "26/2", "26/3", "26/4", "28", "28/2", "28/3", "28/4", "30", "30/2", "30/3", "30/4", "32", "32/2", "32/3", "32/4", "34", "34/2", "34/3", "34/4", "36", "36/2", "36/3", "36/4", "38", "38/2", "38/3", "38/4", "40", "40/2", "40/3", "40/4", "42", "42/2", "42/3", "42/4", "44", "44/2", "44/3", "44/4", "46", "46/2", "46/3", "46/4", "48", "48/2", "48/3", "48/4", "50", "50/2", "50/3", "50/4", "54", "54/2", "54/3", "54/4", "56", "56/2", "56/3", "56/4", "58", "58/2", "58/3", "58/4", "60", "60/2", "60/3", "60/4", "64", "64/2", "64/3", "64/4", "68", "68/2", "68/3", "68/4", "70", "70/2", "70/3", "70/4", "72", "72/2", "72/3", "72/4", "76", "76/2", "76/3", "76/4", "80", "80/2", "80/3", "80/4", "84", "84/2", "84/3", "84/4", "88", "88/2", "88/3", "88/4", "90", "90/2", "90/3", "90/4", "96", "96/2", "96/3", "96/4", "100", "100/2", "100/3", "100/4", "110", "110/2", "110/3", "110/4", "120", "120/2", "120/3", "120/4"],
+            woolen: ["1", "1/2", "1/3", "1/4", "1.5", "1.5/2", "1.5/3", "1.5/4", "2", "2/2", "2/3", "2/4", "2.5", "2.5/2", "2.5/3", "2.5/4", "3", "3/2", "3/3", "3/4", "3.5", "3.5/2", "3.5/3", "3.5/4", "4", "4/2", "4/3", "4/4", "4.5", "4.5/2", "4.5/3", "4.5/4", "5", "5/2", "5/3", "5/4", "5.5", "5.5/2", "5.5/3", "5.5/4", "6", "6/2", "6/3", "6/4", "6.5", "6.5/2", "6.5/3", "6.5/4", "7", "7/2", "7/3", "7/4", "8", "8/2", "8/3", "8/4", "9", "9/2", "9/3", "9/4", "10", "10/2", "10/3", "10/4", "11", "11/2", "11/3", "11/4", "12", "12/2", "12/3", "12/4", "13", "13/2", "13/3", "13/4", "14", "14/2", "14/3", "14/4", "15", "15/2", "15/3", "15/4", "16", "16/2", "16/3", "16/4", "18", "18/2", "18/3", "18/4", "20", "20/2", "20/3", "20/4"],
+            tex: ["3", "4", "5", "6", "7.5", "8", "10", "11", "12", "14", "15", "16", "18", "20", "22", "24", "25", "26", "28", "30", "32", "34", "36", "38", "40", "42", "44", "46", "48", "50", "55", "60", "65", "70", "75", "80", "85", "90", "95", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200", "250", "300", "400", "500", "600", "800", "1000", "1200"],
+            dtex: ["30", "40", "50", "55", "60", "65", "70", "75", "80", "85", "90", "95", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200", "220", "240", "250", "260", "280", "300", "320", "340", "360", "380", "400", "420", "440", "450", "460", "480", "500", "550", "600", "650", "700", "750", "800", "850", "900", "950", "1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900", "2000"],
+            denier: ["10", "15", "20", "22", "24", "26", "28", "30", "33", "35", "36", "38", "40", "44", "45", "48", "50", "55", "58", "60", "64", "66", "70", "75", "78", "80", "84", "88", "90", "96", "100", "110", "120", "130", "140", "150", "160", "170", "180", "190", "200", "210", "220", "230", "240", "250", "260", "270", "280", "290", "300", "330", "350", "380", "400", "420", "450", "480", "500", "550", "600", "650", "700", "750", "800", "850", "900", "950", "1000", "1100", "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900", "2000", "2200", "2400", "2600", "2800", "3000"],
+            ply: ["6/1", "6/2", "6/3", "8/1", "8/2", "10/1", "10/2", "10/3", "12/1", "12/2", "14/1", "14/2", "16/1", "16/2", "16/3", "18/1", "18/2", "20/1", "20/2", "20/3", "20/4", "21/1", "21/2", "24/1", "24/2", "24/3", "26/1", "26/2", "28/1", "28/2", "30/1", "30/2", "30/3", "32/1", "32/2", "34/1", "34/2", "36/1", "36/2", "38/1", "38/2", "40/1", "40/2", "40/3", "42/1", "42/2", "44/1", "44/2", "46/1", "46/2", "48/1", "48/2", "50/1", "50/2", "52/1", "52/2", "54/1", "54/2", "56/1", "56/2", "58/1", "58/2", "60/1", "60/2", "60/3", "64/1", "64/2", "68/1", "68/2", "70/1", "70/2", "72/1", "72/2", "76/1", "76/2", "80/1", "80/2", "84/1", "84/2", "88/1", "88/2", "90/1", "90/2", "96/1", "96/2", "100/1", "100/2", "110/1", "110/2", "120/1", "120/2"],
+            filament: ["20D/6F", "20D/12F", "30D/12F", "30D/24F", "40D/24F", "40D/34F", "50D/24F", "50D/36F", "55D/24F", "60D/24F", "60D/36F", "64D/24F", "66D/24F", "70D/24F", "70D/36F", "70D/48F", "75D/24F", "75D/36F", "75D/48F", "78D/24F", "80D/24F", "80D/36F", "80D/48F", "84D/24F", "84D/36F", "88D/24F", "88D/36F", "90D/24F", "90D/36F", "90D/48F", "96D/24F", "96D/36F", "100D/24F", "100D/36F", "100D/48F", "100D/72F", "110D/36F", "110D/48F", "120D/36F", "120D/48F", "120D/72F", "130D/36F", "130D/48F", "140D/36F", "140D/48F", "140D/72F", "150D/36F", "150D/48F", "150D/72F", "150D/96F", "150D/144F", "160D/48F", "170D/48F", "180D/48F", "180D/72F", "180D/96F", "190D/48F", "200D/48F", "200D/72F", "200D/96F", "200D/144F", "210D/48F", "210D/72F", "220D/48F", "220D/72F", "230D/48F", "240D/48F", "240D/72F", "240D/96F", "250D/48F", "250D/72F", "250D/96F", "260D/72F", "270D/72F", "280D/72F", "280D/96F", "290D/72F", "300D/72F", "300D/96F", "300D/144F", "300D/192F", "330D/72F", "330D/96F", "350D/72F", "350D/96F", "380D/96F", "400D/96F", "400D/144F", "420D/96F", "420D/144F", "450D/96F", "450D/144F", "480D/96F", "480D/144F", "500D/96F", "500D/144F", "550D/96F", "550D/144F", "600D/96F", "600D/144F", "600D/192F", "600D/288F", "650D/144F", "650D/192F", "700D/144F", "700D/192F", "750D/144F", "750D/192F", "800D/144F", "800D/192F", "850D/192F", "900D/192F", "900D/288F", "950D/192F", "1000D/192F", "1000D/288F", "1000D/384F", "1100D/192F", "1100D/288F", "1200D/192F", "1200D/288F", "1200D/384F", "1300D/288F", "1400D/288F", "1500D/288F", "1500D/384F", "1600D/288F", "1700D/288F", "1800D/288F", "1900D/288F", "2000D/288F", "2000D/384F", "2000D/576F"]
+        };
+
+        // ============================================
+        // قاعدة بيانات معلومات التراقيم
+        // ============================================
+        const yarnInfoDB = {
+            ne: {
+                name: "Ne",
+                fullName: "English Cotton Count",
+                type: "indirect",
+                typeLabel: "نظام غير مباشر",
+                description: "نظام ترقيم إنجليزي يُستخدم غالبًا مع الخيوط القطنية. كلما زاد الرقم أصبح الخيط أرفع وأخف.",
+                thicknessRelation: "زيادة الرقم = خيط أرفع",
+                uses: "تيشيرتات – الجوارب – الملابس القطنية – الأقمشة المنزلية – مناشف",
+                materials: "قطن 100% – قطن ممزوج – ألياف لدنة مع قطن",
+                examples: "Ne 30 مناسب للأقمشة المتوسطة. Ne 40 للأقمشة الناعمة. Ne 20 للأقمشة الثقيلة.",
+                socks: true,
+                clothing: true,
+                synthetic: false,
+                machines: "ماكينات الحياكة الدائرية – ماكينات الجوارب – الماكينات المسطحة",
+                industry: "صناعة الملابس الجاهزة – الجوارب – المنسوجات المنزلية"
+            },
+            nm: {
+                name: "Nm",
+                fullName: "Metric Count",
+                type: "indirect",
+                typeLabel: "نظام غير مباشر",
+                description: "النظام المتري للترقيم يعتمد على عدد الكيلومترات per كيلوجرام. شائع في أوروبا والصين.",
+                thicknessRelation: "زيادة الرقم = خيط أرفع",
+                uses: "الصوف – الحرير – الخيوط الفاخرة – الأقمشة الراقية – المفروشات",
+                materials: "صوف – كشمير – حرير – مودال – فيسكوز فاخر",
+                examples: "Nm 50 خيط ناعم للأقمشة الراقية. Nm 20 خيط متوسط للملابس الشتوية.",
+                socks: true,
+                clothing: true,
+                synthetic: false,
+                machines: "ماكينات الحياكة الدائرية – ماكينات التريكو – الماكينات الأوروبية",
+                industry: "الملابس الفاخرة – المنسوجات الراقية – الصوفيات"
+            },
+            worsted: {
+                name: "Worsted",
+                fullName: "Worsted Count",
+                type: "indirect",
+                typeLabel: "نظام غير مباشر",
+                description: "نظام ترقيم للصوف المشطوف (Worsted) يعتمد على 560 ياردة per رطل. يعطي خيوط أملس وأكثر متانة.",
+                thicknessRelation: "زيادة الرقم = خيط أرفع",
+                uses: "البدلات الرسمية – الملابس الشتوية الفاخرة – الأوشحة – القبعات",
+                materials: "صوف مشطوف – صوف ميرينو – صوف فاخر",
+                examples: "Worsted 24 للبدلات الرسمية. Worsted 10 للمعاطف الثقيلة.",
+                socks: false,
+                clothing: true,
+                synthetic: false,
+                machines: "ماكينات التريكو – الماكينات الأوروبية الفاخرة",
+                industry: "الملابس الرسمية – الأزياء الفاخرة – الصوفيات"
+            },
+            woolen: {
+                name: "Woolen",
+                fullName: "Woolen Count (Run System)",
+                type: "indirect",
+                typeLabel: "نظام غير مباشر",
+                description: "نظام ترقيم للصوف الغير مشطوف (Woolen) يعتمد على 1600 ياردة per رطل. يعطي خيوط أكثر نعومة ودفئاً.",
+                thicknessRelation: "زيادة الرقم = خيط أرفع",
+                uses: "الأغطية – المعاطف الشتوية – البطانيات – السجاد – الملابس الدافئة",
+                materials: "صوف غير مشطوف – صوف خشن – ألياف مختلطة",
+                examples: "Woolen 5 للأغطية الثقيلة. Woolen 12 للمعاطف المتوسطة.",
+                socks: true,
+                clothing: true,
+                synthetic: false,
+                machines: "ماكينات النسيج الثقيلة – ماكينات السجاد – الماكينات التقليدية",
+                industry: "الأغطية والبطانيات – السجاد – الملابس الشتوية الثقيلة"
+            },
+            tex: {
+                name: "Tex",
+                fullName: "Tex System",
+                type: "direct",
+                typeLabel: "نظام مباشر",
+                description: "النظام العالمي الموحد لترقيم الخيوط. يعبر عن عدد الغرامات per 1000 متر. يستخدم في المعايير الدولية.",
+                thicknessRelation: "زيادة الرقم = خيط أسمك",
+                uses: "جميع أنواع الخيوط – المعايير الدولية – المواصفات الهندسية – البحث العلمي",
+                materials: "جميع الخامات – قطن – بوليستر – نايلون – صوف – ألياف خاصة",
+                examples: "Tex 20 خيط خفيف. Tex 100 خيط متوسط. Tex 500 خيط سميك للصناعات الثقيلة.",
+                socks: true,
+                clothing: true,
+                synthetic: true,
+                machines: "جميع الماكينات – المعايرة الصناعية – اختبارات الجودة",
+                industry: "جميع الصناعات النسيجية – المعايير الدولية – البحث والتطوير"
+            },
+            dtex: {
+                name: "Dtex",
+                fullName: "Decitex",
+                type: "direct",
+                typeLabel: "نظام مباشر",
+                description: "نظام أوروبي شائع يعبر عن عدد الديسيغرامات (0.1 جرام) per 1000 متر. يستخدم في الخيوط الدقيقة.",
+                thicknessRelation: "زيادة الرقم = خيط أسمك",
+                uses: "الخيوط الدقيقة – الألياف الصناعية – الجوارب الناعمة – الملابس الداخلية",
+                materials: "بوليستر – نايلون – سباندكس – ألياف دقيقة – خيوط خاصة",
+                examples: "Dtex 70 خيط ناعم جداً. Dtex 200 خيط متوسط للجوارب. Dtex 500 خيط سميك.",
+                socks: true,
+                clothing: true,
+                synthetic: true,
+                machines: "ماكينات الجوارب الدقيقة – ماكينات الملابس الداخلية – الماكينات الأوروبية",
+                industry: "الجوارب – الملابس الداخلية – الألياف الدقيقة – الجوارب الطبية"
+            },
+            denier: {
+                name: "Denier",
+                fullName: "Denier System",
+                type: "direct",
+                typeLabel: "نظام مباشر",
+                description: "نظام ترقيم قديم يعتمد على عدد الغرامات per 9000 متر. شائع جداً في الخيوط الصناعية والجوارب.",
+                thicknessRelation: "زيادة الرقم = خيط أسمك",
+                uses: "الجوارب – الشدات – الخيوط الصناعية – الأقمشة الرياضية – الألياف الضوئية",
+                materials: "بوليستر – نايلون – أكريليك – ألياف خاصة – خيوط مغطاة",
+                examples: "70D خيط ناعم للجوارب الشفافة. 150D خيط متوسط للجوارب الرياضية. 300D خيط سميك للشدات.",
+                socks: true,
+                clothing: true,
+                synthetic: true,
+                machines: "ماكينات الجوارب – ماكينات الحياكة الدائرية – ماكينات الشدات – الماكينات الصناعية",
+                industry: "صناعة الجوارب – الشدات – الأقمشة الرياضية – الخيوط الصناعية"
+            },
+            ply: {
+                name: "Ply Yarn",
+                fullName: "Ply Yarn System",
+                type: "indirect",
+                typeLabel: "نظام غير مباشر (مجدول)",
+                description: "نظام ترقيم للخيوط المجدولة. الرقم الأول يعبر عن ترقيم الخيط الفردي، والثاني عن عدد الخيوط المجدولة.",
+                thicknessRelation: "↑ الرقم الأول = خيط أرفع | ↑ الرقم الثاني = خيط أسمك",
+                uses: "الأقمشة الثقيلة – الخيوط المجدولة – الأقمشة المنسوجة – الحبال – الخيوط الخاصة",
+                materials: "قطن – صوف – بوليستر – خيوط مغطاة – خيوط خاصة",
+                examples: "20/2 يعني خيطين من Ne 20، الناتج Ne 10. 30/3 يعني ثلاثة خيوط من Ne 30.",
+                socks: true,
+                clothing: true,
+                synthetic: false,
+                machines: "ماكينات النسيج – ماكينات الحياكة – ماكينات تجديل الخيوط",
+                industry: "الأقمشة المنسوجة – الخيوط المجدولة – الملابس الثقيلة – المنزليات"
+            },
+            filament: {
+                name: "Denier/Filament",
+                fullName: "Denier per Filament",
+                type: "direct",
+                typeLabel: "نظام مباشر (متعدد الألياف)",
+                description: "نظام ترقيم للخيوط متعددة الألياف (Multifilament). الرقم الأول Denier الكلي، والثاني عدد الألياف.",
+                thicknessRelation: "↑ الرقم الأول = خيط أسمك | ↑ عدد الألياف = نعومة أكثر",
+                uses: "الجوارب الرياضية – الشدات – الأقمشة الرياضية – الألياف الضوئية – الخيوط الفاخرة",
+                materials: "بوليستر – نايلون – ألياف خاصة – خيوط مغطاة باللدنة",
+                examples: "150D/48F شائع في الجوارب. 70D/24F للجوارب الناعمة. 300D/96F للشدات الرياضية.",
+                socks: true,
+                clothing: true,
+                synthetic: true,
+                machines: "ماكينات الجوارب المتطورة – ماكينات الشدات – الماكينات الرياضية",
+                industry: "الجوارب الرياضية – الشدات – الأقمشة الرياضية – الألياف التقنية"
+            }
+        };
+
+        // ============================================
+        // دوال التحويل
+        // ============================================
+        function parseValue(system, value) {
+            value = value.trim().toUpperCase();
+            // Handle Denier/Filament format: 150D/48F
+            if (system === 'filament') {
+                const filamentMatch = value.match(/^(\d+)D\/(\d+)F$/i);
+                if (filamentMatch) {
+                    return parseFloat(filamentMatch[1]);
+                }
+                return parseFloat(value);
+            }
+            // Handle Ply notation for ALL systems: 20/2, 40/2, Nm 50/2, etc.
+            const plyMatch = value.match(/^(\d+(?:\.\d+)?)\/(\d+)$/);
+            if (plyMatch) {
+                const single = parseFloat(plyMatch[1]);
+                const ply = parseInt(plyMatch[2]);
+                return single / ply;
+            }
+            return parseFloat(value);
+        }
+
+        function toTex(system, value) {
+            const num = parseValue(system, value);
+            if (isNaN(num) || num <= 0) return null;
+
+            switch(system) {
+                case 'ne': return 590.5 / num;
+                case 'nm': return 1000 / num;
+                case 'worsted': return 885.8 / num;
+                case 'woolen': return 310.3 / num;
+                case 'tex': return num;
+                case 'dtex': return num / 10;
+                case 'denier': return num / 9;
+                case 'ply': return 590.5 / num;
+                case 'filament': return num / 9;
+                default: return null;
+            }
+        }
+
+        function fromTex(tex, system) {
+            if (tex === null || tex <= 0) return null;
+
+            switch(system) {
+                case 'ne': return 590.5 / tex;
+                case 'nm': return 1000 / tex;
+                case 'worsted': return 885.8 / tex;
+                case 'woolen': return 310.3 / tex;
+                case 'tex': return tex;
+                case 'dtex': return tex * 10;
+                case 'denier': return tex * 9;
+                case 'ply': return 590.5 / tex;
+                case 'filament': return tex * 9;
+                default: return null;
+            }
+        }
+
+        function convert(systemFrom, systemTo, value) {
+            const tex = toTex(systemFrom, value);
+            if (tex === null) return null;
+            return fromTex(tex, systemTo);
+        }
+
+        function formatResult(system, value) {
+            if (value === null || isNaN(value)) return '-';
+            if (value < 0.01) return value.toExponential(3);
+            if (value < 1) return value.toFixed(3);
+            if (value < 10) return value.toFixed(2);
+            if (value < 100) return value.toFixed(1);
+            return value.toFixed(0);
+        }
+
+        function getSystemLabel(system) {
+            const labels = {
+                ne: 'Ne', nm: 'Nm', worsted: 'Worsted', woolen: 'Woolen',
+                tex: 'Tex', dtex: 'Dtex', denier: 'Denier', ply: 'Ply', filament: 'Denier/Filament'
+            };
+            return labels[system] || system;
+        }
+
+        // ============================================
+        // عناصر DOM
+        // ============================================
+        const fromSystem = document.getElementById('fromSystem');
+        const toSystem = document.getElementById('toSystem');
+        const inputValue = document.getElementById('inputValue');
+        const yarnCountsDatalist = document.getElementById('yarnCounts');
+        const convertBtn = document.getElementById('convertBtn');
+        const swapBtn = document.getElementById('swapBtn');
+        const resultSection = document.getElementById('resultSection');
+        const resultValue = document.getElementById('resultValue');
+        const copyBtn = document.getElementById('copyBtn');
+        const favBtn = document.getElementById('favBtn');
+        const errorAlert = document.getElementById('errorAlert');
+        const errorText = document.getElementById('errorText');
+        const infoBox = document.getElementById('infoBox');
+        const infoTitle = document.getElementById('infoTitle');
+        const infoSubtitle = document.getElementById('infoSubtitle');
+        const infoGrid = document.getElementById('infoGrid');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        // ============================================
+        // تحديث قائمة النمر
+        // ============================================
+        function updateDatalist() {
+            const system = fromSystem.value;
+            yarnCountsDatalist.innerHTML = '';
+            if (!system || !yarnCountsDB[system]) return;
+
+            yarnCountsDB[system].forEach(count => {
+                const option = document.createElement('option');
+                option.value = count;
+                yarnCountsDatalist.appendChild(option);
+            });
+        }
+
+        fromSystem.addEventListener('change', () => {
+            updateDatalist();
+            showInfo(fromSystem.value);
+        });
+
+        toSystem.addEventListener('change', () => {
+            // Optional: show info for target system too
+        });
+
+        // ============================================
+        // عرض صندوق المعلومات
+        // ============================================
+        function showInfo(system) {
+            if (!system || !yarnInfoDB[system]) {
+                infoBox.classList.remove('active');
+                return;
+            }
+
+            const info = yarnInfoDB[system];
+            infoTitle.textContent = info.name + ' - ' + info.fullName;
+            infoSubtitle.textContent = info.typeLabel;
+
+            const typeBadge = info.type === 'direct' 
+                ? '<span class="badge badge-direct">نظام مباشر</span>' 
+                : '<span class="badge badge-indirect">نظام غير مباشر</span>';
+
+            const socksBadge = info.socks 
+                ? '<span class="badge badge-suitable">مناسب للجوارب</span>' 
+                : '<span class="badge badge-unsuitable">غير مناسب للجوارب</span>';
+
+            infoGrid.innerHTML = `
+                <div class="info-item">
+                    <div class="info-item-label"><i class="fas fa-align-right"></i> الوصف</div>
+                    <div class="info-item-value">${info.description}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label"><i class="fas fa-balance-scale"></i> العلاقة</div>
+                    <div class="info-item-value">${info.thicknessRelation}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label"><i class="fas fa-industry"></i> الاستخدامات</div>
+                    <div class="info-item-value">${info.uses}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label"><i class="fas fa-cubes"></i> الخامات المناسبة</div>
+                    <div class="info-item-value">${info.materials}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label"><i class="fas fa-lightbulb"></i> أمثلة عملية</div>
+                    <div class="info-item-value">${info.examples}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label"><i class="fas fa-cogs"></i> الماكينات</div>
+                    <div class="info-item-value">${info.machines}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label"><i class="fas fa-building"></i> المجال الصناعي</div>
+                    <div class="info-item-value">${info.industry}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label"><i class="fas fa-tags"></i> التصنيف</div>
+                    <div class="info-item-value">${typeBadge} ${socksBadge}</div>
+                </div>
+            `;
+
+            infoBox.classList.add('active');
+        }
+
+        // ============================================
+        // التحويل
+        // ============================================
+        function performConversion() {
+            hideError();
+
+            const from = fromSystem.value;
+            const to = toSystem.value;
+            const val = inputValue.value.trim();
+
+            if (!from) { showError('يرجى اختيار نظام الترقيم المصدر'); return; }
+            if (!to) { showError('يرجى اختيار نظام الترقيم الهدف'); return; }
+            if (!val) { showError('يرجى إدخال قيمة الخيط'); return; }
+
+            const parsed = parseValue(from, val);
+            if (isNaN(parsed) || parsed <= 0) {
+                showError('القيمة المدخلة غير صحيحة. يرجى إدخال رقم موجب');
+                return;
+            }
+
+            loadingIndicator.classList.add('active');
+
+            setTimeout(() => {
+                const result = convert(from, to, val);
+                loadingIndicator.classList.remove('active');
+
+                if (result === null || isNaN(result)) {
+                    showError('حدث خطأ في التحويل. يرجى التحقق من القيمة المدخلة');
+                    return;
+                }
+
+                const formatted = formatResult(to, result);
+                resultValue.textContent = formatted + ' ' + getSystemLabel(to);
+                resultSection.classList.add('active');
+
+                // Save to history
+                addToHistory(from, to, val, formatted);
+
+                // Scroll to result
+                resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 400);
+        }
+
+        convertBtn.addEventListener('click', performConversion);
+
+        // ============================================
+        // التبديل
+        // ============================================
+        swapBtn.addEventListener('click', () => {
+            const temp = fromSystem.value;
+            fromSystem.value = toSystem.value;
+            toSystem.value = temp;
+            updateDatalist();
+            showInfo(fromSystem.value);
+
+            if (resultSection.classList.contains('active')) {
+                performConversion();
+            }
+        });
+
+        // ============================================
+        // رسائل الخطأ
+        // ============================================
+        function showError(msg) {
+            errorText.textContent = msg;
+            errorAlert.classList.add('active');
+            setTimeout(hideError, 5000);
+        }
+
+        function hideError() {
+            errorAlert.classList.remove('active');
+        }
+
+        // ============================================
+        // نسخ النتيجة
+        // ============================================
+        copyBtn.addEventListener('click', () => {
+            const text = resultValue.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const original = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> تم النسخ!';
+                setTimeout(() => copyBtn.innerHTML = original, 2000);
+            });
+        });
+
+        // ============================================
+        // المفضلة
+        // ============================================
+        let favorites = JSON.parse(localStorage.getItem('yarnFavorites') || '[]');
+
+        favBtn.addEventListener('click', () => {
+            const from = fromSystem.value;
+            const to = toSystem.value;
+            const val = inputValue.value;
+            const res = resultValue.textContent;
+
+            if (!from || !to || !val) return;
+
+            const key = from + '|' + to + '|' + val;
+            const exists = favorites.find(f => f.key === key);
+
+            if (exists) {
+                favorites = favorites.filter(f => f.key !== key);
+                favBtn.classList.remove('active');
+                favBtn.innerHTML = '<i class="fas fa-heart"></i> إضافة للمفضلة';
+            } else {
+                favorites.push({ key, from, to, val, res, date: new Date().toLocaleString('ar-EG') });
+                favBtn.classList.add('active');
+                favBtn.innerHTML = '<i class="fas fa-heart"></i> في المفضلة';
+            }
+
+            localStorage.setItem('yarnFavorites', JSON.stringify(favorites));
+            renderFavorites();
+        });
+
+        function renderFavorites() {
+            const container = document.getElementById('favoritesContent');
+            if (favorites.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-heart"></i>
+                        <p>لا توجد تحويلات مفضلة بعد</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = '<div class="fav-grid">' + favorites.map(f => `
+                <div class="fav-item">
+                    <div class="fav-info">
+                        <strong>${f.val} ${getSystemLabel(f.from)}</strong>
+                        <i class="fas fa-arrow-left" style="color:var(--primary);margin:0 0.5rem;"></i>
+                        <strong>${f.res}</strong>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.25rem;">${f.date}</div>
+                    </div>
+                    <div class="fav-actions">
+                        <button class="icon-btn" onclick="loadFavorite('${f.from}', '${f.to}', '${f.val}')" title="تحميل">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                        <button class="icon-btn" onclick="removeFavorite('${f.key}')" title="حذف">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('') + '</div>';
+        }
+
+        window.loadFavorite = function(from, to, val) {
+            fromSystem.value = from;
+            toSystem.value = to;
+            inputValue.value = val;
+            updateDatalist();
+            showInfo(from);
+            performConversion();
+        };
+
+        window.removeFavorite = function(key) {
+            favorites = favorites.filter(f => f.key !== key);
+            localStorage.setItem('yarnFavorites', JSON.stringify(favorites));
+            renderFavorites();
+        };
+
+        // ============================================
+        // السجل
+        // ============================================
+        let history = JSON.parse(localStorage.getItem('yarnHistory') || '[]');
+
+        function addToHistory(from, to, val, res) {
+            const entry = {
+                from, to, val, res,
+                date: new Date().toLocaleString('ar-EG'),
+                id: Date.now()
+            };
+            history.unshift(entry);
+            if (history.length > 50) history = history.slice(0, 50);
+            localStorage.setItem('yarnHistory', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyContent');
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clock-rotate-left"></i>
+                        <p>لا توجد تحويلات مسجلة بعد</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>الوقت</th>
+                            <th>من</th>
+                            <th>القيمة</th>
+                            <th>إلى</th>
+                            <th>النتيجة</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${history.map(h => `
+                            <tr>
+                                <td>${h.date}</td>
+                                <td>${getSystemLabel(h.from)}</td>
+                                <td>${h.val}</td>
+                                <td>${getSystemLabel(h.to)}</td>
+                                <td><strong style="color:var(--primary);">${h.res}</strong></td>
+                                <td>
+                                    <button class="icon-btn" onclick="loadFavorite('${h.from}', '${h.to}', '${h.val}')" title="إعادة التحويل">
+                                        <i class="fas fa-redo"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        window.clearHistory = function() {
+            if (confirm('هل أنت متأكد من مسح سجل التحويلات؟')) {
+                history = [];
+                localStorage.setItem('yarnHistory', JSON.stringify(history));
+                renderHistory();
+            }
+        };
+
+        // ============================================
+        // أمثلة سريعة
+        // ============================================
+        window.setExample = function(from, val, to) {
+            fromSystem.value = from;
+            toSystem.value = to;
+            inputValue.value = val;
+            updateDatalist();
+            showInfo(from);
+            performConversion();
+        };
+
+        // ============================================
+        // اختصارات لوحة المفاتيح
+        // ============================================
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                performConversion();
+            }
+            if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
+                e.preventDefault();
+                swapBtn.click();
+            }
+        });
+
+        // ============================================
+        // عداد الزيارات (CountAPI)
+        // ============================================
+        async function updateVisitorCount() {
+            const countEl = document.getElementById('visitorCount');
+            const footerCountEl = document.getElementById('footerVisitorCount');
+
+            try {
+                // Use CountAPI - free visitor counter service
+                const namespace = 'yarn-calculator-adel-essam';
+                const key = 'visits';
+
+                // First try to get current count
+                const getResponse = await fetch(`https://api.countapi.xyz/get/${namespace}/${key}`);
+                let count;
+
+                if (getResponse.ok) {
+                    const data = await getResponse.json();
+                    count = data.value;
+                } else {
+                    // If key doesn't exist, create it
+                    const createResponse = await fetch(`https://api.countapi.xyz/create?namespace=${namespace}&key=${key}&value=0`);
+                    if (createResponse.ok) {
+                        count = 0;
+                    }
+                }
+
+                // Increment
+                const hitResponse = await fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`);
+                if (hitResponse.ok) {
+                    const hitData = await hitResponse.json();
+                    count = hitData.value;
+                }
+
+                countEl.textContent = count.toLocaleString('ar-EG');
+                footerCountEl.textContent = count.toLocaleString('ar-EG');
+            } catch (err) {
+                console.log('Visitor counter error:', err);
+                countEl.textContent = 'غير متاح';
+                footerCountEl.textContent = 'غير متاح';
+            }
+        }
+
+        // ============================================
+        // جسيمات الخلفية
+        // ============================================
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 15 + 's';
+                p.style.animationDuration = (10 + Math.random() * 10) + 's';
+                p.style.opacity = Math.random() * 0.3;
+                container.appendChild(p);
+            }
+        }
+
+        // ============================================
+        // التهيئة
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            renderHistory();
+            renderFavorites();
+            updateVisitorCount();
+        });
+    </script>
+</body>
+</html>
